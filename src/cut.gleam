@@ -1,5 +1,6 @@
 import gleam/io
 import gleam/list
+import gleam/string
 import glint/flag
 import file_streams/read_stream_error
 import file_streams/read_text_stream.{type ReadTextStream}
@@ -23,6 +24,28 @@ type DELIM {
   Unsupported(String)
 }
 
+fn map_input_to_delim(input: String) -> DELIM {
+  case input {
+    " " -> Space(input)
+    "," -> Comma(input)
+    "|" -> Pipe(input)
+    ";" -> Semicolon(input)
+    "\t" -> Tab(input)
+    _ -> Unsupported(input)
+  }
+}
+
+fn get_delim_value(delim: DELIM) -> String {
+  case delim {
+    Space(v) -> v
+    Comma(v) -> v
+    Pipe(v) -> v
+    Semicolon(v) -> v
+    Tab(v) -> v
+    Unsupported(v) -> v
+  }
+}
+
 fn do_read_by_delimiter(
   acc: String,
   rts: ReadTextStream,
@@ -40,6 +63,9 @@ fn do_read_by_delimiter(
       }
     }
     Ok(v) -> {
+      string.split(v, on: get_delim_value(delim))
+      |> list.map(fn(a) { string.trim(a) })
+      |> io.debug
       do_read_by_delimiter(acc <> v, rts, delim)
     }
   }
@@ -52,14 +78,7 @@ fn read_by_delimiter(rts: ReadTextStream, delim: DELIM) -> String {
 fn run_cut(input: glint.CommandInput) -> Nil {
   // get flag 'delimiter' from cli argument
   let assert Ok(f) = flag.get_string(from: input.flags, for: delimiter)
-  let delim = case f {
-    " " -> Space(f)
-    "," -> Comma(f)
-    "|" -> Pipe(f)
-    ";" -> Semicolon(f)
-    "\t" -> Tab(f)
-    _ -> Unsupported(f)
-  }
+  let delim = map_input_to_delim(f)
 
   // get args filepath
   let file_path = case list.first(input.args) {
@@ -75,7 +94,7 @@ fn run_cut(input: glint.CommandInput) -> Nil {
   let assert Ok(rts) = read_text_stream.open(file_path)
   let content = read_by_delimiter(rts, delim)
   read_text_stream.close(rts)
-  io.println(content)
+  Nil
 }
 
 pub fn main() {
