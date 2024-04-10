@@ -15,6 +15,13 @@ fn delimiter_flag() -> flag.FlagBuilder(String) {
   |> flag.description("use DELIM instead of TAB for field delimiter")
 }
 
+const field = "field"
+
+fn field_flag() -> flag.FlagBuilder(Int) {
+  flag.int()
+  |> flag.description("select only this field. Valid value starts from 1")
+}
+
 type DELIM {
   Space(String)
   Comma(String)
@@ -46,10 +53,27 @@ fn get_delim_value(delim: DELIM) -> String {
   }
 }
 
+fn do_get_element(list: List(String), index: Int, cur: Int) -> String {
+  case list {
+    [first, ..rest] -> {
+      case cur {
+        cur if cur == index -> first
+        _ -> do_get_element(rest, index, cur + 1)
+      }
+    }
+    _ -> ""
+  }
+}
+
+fn get_element(for list: List(String), at position: Int) -> String {
+  do_get_element(list, position - 1, 0)
+}
+
 fn do_read_by_delimiter(
   acc: String,
   rts: ReadTextStream,
   delim: DELIM,
+  field: Int,
 ) -> String {
   case read_text_stream.read_line(rts) {
     Error(e) -> {
@@ -64,21 +88,34 @@ fn do_read_by_delimiter(
     }
     Ok(v) -> {
       string.split(v, on: get_delim_value(delim))
-      |> list.map(fn(a) { string.trim(a) })
+      |> get_element(at: field)
       |> io.debug
-      do_read_by_delimiter(acc <> v, rts, delim)
+      do_read_by_delimiter(acc <> v, rts, delim, field)
     }
   }
 }
 
-fn read_by_delimiter(rts: ReadTextStream, delim: DELIM) -> String {
-  do_read_by_delimiter("", rts, delim)
+fn read_by_delimiter(rts: ReadTextStream, delim: DELIM, field: Int) -> String {
+  do_read_by_delimiter("", rts, delim, field)
 }
 
 fn run_cut(input: glint.CommandInput) -> Nil {
   // get flag 'delimiter' from cli argument
-  let assert Ok(f) = flag.get_string(from: input.flags, for: delimiter)
-  let delim = map_input_to_delim(f)
+  let assert Ok(d) = flag.get_string(from: input.flags, for: delimiter)
+  let delim = map_input_to_delim(d)
+
+  let assert Ok(f) = flag.get_int(from: input.flags, for: field)
+  let field = case f {
+    f if f > 0 -> f
+    f if f <= 0 -> {
+      io.println_error("cut: field is numbered from 1")
+      panic
+    }
+    _ -> {
+      io.println_error("cut: invalid field value")
+      panic
+    }
+  }
 
   // get args filepath
   let file_path = case list.first(input.args) {
@@ -92,7 +129,7 @@ fn run_cut(input: glint.CommandInput) -> Nil {
 
   // read file from filepath given
   let assert Ok(rts) = read_text_stream.open(file_path)
-  let content = read_by_delimiter(rts, delim)
+  let content = read_by_delimiter(rts, delim, field)
   read_text_stream.close(rts)
   Nil
 }
@@ -104,6 +141,7 @@ pub fn main() {
     at: [],
     do: glint.command(run_cut)
       |> glint.flag(delimiter, delimiter_flag())
+      |> glint.flag(field, field_flag())
       |> glint.description(
         "Print selected parts of lines from each FILE to standard output.\n\nWith no FILE, or when FILE is -, read standard input.",
       ),
