@@ -16,6 +16,7 @@ version = "1.0.0"
 gleam_stdlib = "~> 0.34 or ~> 1.0"
 argv = "~> 1.0"
 glint = "~> 0.18"
+file_streams = "~> 0.3"
 
 [dev-dependencies]
 gleeunit = "~> 1.0"
