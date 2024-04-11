@@ -1,25 +1,8 @@
-# cut
+# Rip-Off Cut
 
-[![Package Version](https://img.shields.io/hexpm/v/cut)](https://hex.pm/packages/cut)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/cut/)
-
-```sh
-gleam add cut
-```
-```gleam
-import cut
-
-pub fn main() {
-  // TODO: An example of the project in use
-}
-```
-
-Further documentation can be found at <https://hexdocs.pm/cut>.
-
-## Development
-
-```sh
-gleam run   # Run the project
-gleam test  # Run the tests
-gleam shell # Run an Erlang shell
-```
+- This is my attempt to build a clone of GNU coreutils 'cut' for [The Coding Challenges - Build Your Own cut Tool](https://codingchallenges.fyi/challenges/challenge-cut/)
+- To make it more challenging, I developed it with new programming language, Gleam which has released its v1.0.0 about a month ago. The reason I chose it because it:
+  - is statically typed
+  - has minimal features just like Go
+  - is a functional paradigm (which I'm not familiar with)
+- Well, I might be writing this language as recreational programming for now.
