@@ -54,20 +54,15 @@ fn get_delim_value(delim: DELIM) -> String {
   }
 }
 
-fn do_get_element(seq: List(String), index: Int, cur: Int) -> String {
-  case seq {
-    [] -> ""
-    [first, ..rest] -> {
-      case cur {
-        cur if cur == index -> first
-        _ -> do_get_element(rest, index, cur + 1)
-      }
-    }
+fn do_get_element(seq: List(String), index: Int) -> String {
+  case list.at(in: seq, get: index) {
+    Error(_) -> ""
+    Ok(v) -> v
   }
 }
 
 fn get_element(for seq: List(String), at position: Int) -> String {
-  do_get_element(seq, position - 1, 0)
+  do_get_element(seq, position - 1)
 }
 
 fn do_read_by_delimiter(
