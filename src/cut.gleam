@@ -6,6 +6,8 @@ import file_streams/read_stream_error
 import file_streams/read_text_stream.{type ReadTextStream}
 import glint
 import argv
+import shellout
+
 
 const delimiter = "delimiter"
 
@@ -53,20 +55,20 @@ fn get_delim_value(delim: DELIM) -> String {
   }
 }
 
-fn do_get_element(list: List(String), index: Int, cur: Int) -> String {
-  case list {
+fn do_get_element(seq: List(String), index: Int, cur: Int) -> String {
+  case seq {
+    [] -> ""
     [first, ..rest] -> {
       case cur {
         cur if cur == index -> first
         _ -> do_get_element(rest, index, cur + 1)
       }
     }
-    _ -> ""
   }
 }
 
-fn get_element(for list: List(String), at position: Int) -> String {
-  do_get_element(list, position - 1, 0)
+fn get_element(for seq: List(String), at position: Int) -> String {
+  do_get_element(seq, position - 1, 0)
 }
 
 fn do_read_by_delimiter(
@@ -82,7 +84,8 @@ fn do_read_by_delimiter(
         _ -> {
           io.debug(e)
           io.println_error("error encountered while reading file")
-          panic
+          shellout.exit(1)
+          ""
         }
       }
     }
@@ -108,11 +111,13 @@ fn run_cut(input: glint.CommandInput) -> Nil {
     f if f > 0 -> f
     f if f <= 0 -> {
       io.println_error("cut: field is numbered from 1")
-      panic
+      shellout.exit(1)
+      0
     }
     _ -> {
       io.println_error("cut: invalid field value")
-      panic
+      shellout.exit(1)
+      0
     }
   }
 
@@ -121,7 +126,8 @@ fn run_cut(input: glint.CommandInput) -> Nil {
     Error(e) -> {
       io.debug(e)
       io.println_error("error extracting argument")
-      panic
+      shellout.exit(1)
+      ""
     }
     Ok(value) -> value
   }
@@ -132,6 +138,8 @@ fn run_cut(input: glint.CommandInput) -> Nil {
   read_text_stream.close(rts)
   io.println(content)
 }
+
+
 
 pub fn main() {
   glint.new()
