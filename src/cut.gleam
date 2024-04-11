@@ -8,7 +8,6 @@ import glint
 import argv
 import shellout
 
-
 const delimiter = "delimiter"
 
 fn delimiter_flag() -> flag.FlagBuilder(String) {
@@ -82,16 +81,19 @@ fn do_read_by_delimiter(
       case e {
         read_stream_error.EndOfStream -> acc
         _ -> {
+          io.println_error("Error: error while while reading file")
+          io.println_error("Detail: ")
           io.debug(e)
-          io.println_error("error encountered while reading file")
           shellout.exit(1)
           ""
         }
       }
     }
     Ok(v) -> {
-      let cell_val = string.split(v, on: get_delim_value(delim))
-          |> get_element(at: field) <> "\n"
+      let cell_val =
+        string.split(v, on: get_delim_value(delim))
+        |> get_element(at: field)
+        <> "\n"
       do_read_by_delimiter(acc <> cell_val, rts, delim, field)
     }
   }
@@ -102,7 +104,6 @@ fn read_by_delimiter(rts: ReadTextStream, delim: DELIM, field: Int) -> String {
 }
 
 fn run_cut(input: glint.CommandInput) -> Nil {
-  // get flag 'delimiter' from cli argument
   let assert Ok(d) = flag.get_string(from: input.flags, for: delimiter)
   let delim = map_input_to_delim(d)
 
@@ -110,36 +111,33 @@ fn run_cut(input: glint.CommandInput) -> Nil {
   let field = case f {
     f if f > 0 -> f
     f if f <= 0 -> {
-      io.println_error("cut: field is numbered from 1")
+      io.println_error("Error: field is numbered from 1")
       shellout.exit(1)
       0
     }
     _ -> {
-      io.println_error("cut: invalid field value")
+      io.println_error("Error: invalid field value")
       shellout.exit(1)
       0
     }
   }
 
-  // get args filepath
   let file_path = case list.first(input.args) {
     Error(e) -> {
+      io.println_error("Error extracting 'filepath' argument")
+      io.println_error("Detail: ")
       io.debug(e)
-      io.println_error("error extracting argument")
       shellout.exit(1)
       ""
     }
     Ok(value) -> value
   }
 
-  // read file from filepath given
   let assert Ok(rts) = read_text_stream.open(file_path)
-  let content = read_by_delimiter(rts, delim, field)
+  read_by_delimiter(rts, delim, field)
+  |> io.println
   read_text_stream.close(rts)
-  io.println(content)
 }
-
-
 
 pub fn main() {
   glint.new()
