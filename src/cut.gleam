@@ -12,14 +12,14 @@ const delimiter = "delimiter"
 fn delimiter_flag() -> flag.FlagBuilder(String) {
   flag.string()
   |> flag.default("\t")
-  |> flag.description("use DELIM instead of TAB for field delimiter")
+  |> flag.description("Use DELIM instead of TAB for field delimiter")
 }
 
 const field = "field"
 
 fn field_flag() -> flag.FlagBuilder(Int) {
   flag.int()
-  |> flag.description("select only this field. Valid value starts from 1")
+  |> flag.description("Select only this field. Valid value starts from 1")
 }
 
 type DELIM {
@@ -87,10 +87,9 @@ fn do_read_by_delimiter(
       }
     }
     Ok(v) -> {
-      string.split(v, on: get_delim_value(delim))
-      |> get_element(at: field)
-      |> io.debug
-      do_read_by_delimiter(acc <> v, rts, delim, field)
+      let cell_val = string.split(v, on: get_delim_value(delim))
+          |> get_element(at: field) <> "\n"
+      do_read_by_delimiter(acc <> cell_val, rts, delim, field)
     }
   }
 }
@@ -131,7 +130,7 @@ fn run_cut(input: glint.CommandInput) -> Nil {
   let assert Ok(rts) = read_text_stream.open(file_path)
   let content = read_by_delimiter(rts, delim, field)
   read_text_stream.close(rts)
-  Nil
+  io.println(content)
 }
 
 pub fn main() {
@@ -143,7 +142,7 @@ pub fn main() {
       |> glint.flag(delimiter, delimiter_flag())
       |> glint.flag(field, field_flag())
       |> glint.description(
-        "Print selected parts of lines from each FILE to standard output.\n\nWith no FILE, or when FILE is -, read standard input.",
+        "Print selected parts of lines from each FILE to standard output.\n",
       ),
   )
   |> glint.run(argv.load().arguments)
