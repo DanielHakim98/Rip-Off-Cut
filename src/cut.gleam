@@ -1,6 +1,7 @@
 import gleam/io
 import gleam/list
 import gleam/string
+import gleam/option.{type Option, None, Some}
 import glint/flag
 import file_streams/read_stream_error
 import file_streams/read_text_stream.{type ReadTextStream}
@@ -54,6 +55,19 @@ fn get_delim_value(delim: DELIM) -> String {
   }
 }
 
+fn exit_program_with_error(title msg: String, reason e: Option(a)) -> Nil {
+  io.println_error("Error: " <> msg)
+  case e {
+    Some(a) -> {
+      io.println_error("Detail: ")
+      io.debug(a)
+      Nil
+    }
+    None -> Nil
+  }
+  shellout.exit(1)
+}
+
 fn do_get_element(seq: List(String), index: Int) -> String {
   case list.at(in: seq, get: index) {
     Error(_) -> ""
@@ -76,10 +90,10 @@ fn do_read_by_delimiter(
       case e {
         read_stream_error.EndOfStream -> acc
         _ -> {
-          io.println_error("Error: error while while reading file")
-          io.println_error("Detail: ")
-          io.debug(e)
-          shellout.exit(1)
+          exit_program_with_error(
+            title: "error while while reading file",
+            reason: Some(e),
+          )
           ""
         }
       }
@@ -106,23 +120,21 @@ fn run_cut(input: glint.CommandInput) -> Nil {
   let field = case f {
     f if f > 0 -> f
     f if f <= 0 -> {
-      io.println_error("Error: field is numbered from 1")
-      shellout.exit(1)
+      exit_program_with_error(title: "field is numbered from 1", reason: None)
       0
     }
     _ -> {
-      io.println_error("Error: invalid field value")
-      shellout.exit(1)
+      exit_program_with_error(title: "invalid field value", reason: None)
       0
     }
   }
 
   let file_path = case list.first(input.args) {
     Error(e) -> {
-      io.println_error("Error extracting 'filepath' argument")
-      io.println_error("Detail: ")
-      io.debug(e)
-      shellout.exit(1)
+      exit_program_with_error(
+        title: "extracting 'filepath' argument",
+        reason: Some(e),
+      )
       ""
     }
     Ok(value) -> value
