@@ -110,6 +110,7 @@ fn do_read_by_delimiter(
 
 fn read_by_delimiter(rts: ReadTextStream, delim: DELIM, field: Int) -> String {
   do_read_by_delimiter("", rts, delim, field)
+  |> string.trim_right
 }
 
 fn run_cut(input: glint.CommandInput) -> Nil {
