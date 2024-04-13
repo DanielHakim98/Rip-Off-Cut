@@ -23,7 +23,6 @@ fn println_error_extend(title msg: String, reason e: Option(a)) -> Nil {
   }
 }
 
-
 const delimiter = "delimiter"
 
 fn delimiter_flag() -> flag.FlagBuilder(String) {
@@ -69,8 +68,6 @@ fn get_delim_value(delim: DELIM) -> String {
     Unsupported(v) -> v
   }
 }
-
-
 
 fn do_get_element(seq: List(String), index: Int) -> String {
   case list.at(in: seq, get: index) {
@@ -138,7 +135,8 @@ fn run_cut(input: glint.CommandInput) -> Nil {
     Error(e) -> {
       println_error_extend(
         title: "extracting 'filepath' argument",
-        reason: Some(e),)
+        reason: Some(e),
+      )
       shutdown(1)
     }
     Ok(value) -> value
