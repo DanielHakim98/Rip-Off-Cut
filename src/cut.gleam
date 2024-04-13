@@ -141,10 +141,30 @@ fn run_cut(input: glint.CommandInput) -> Nil {
     Ok(value) -> value
   }
 
-  let assert Ok(rts) = read_text_stream.open(file_path)
+  let rts = case read_text_stream.open(file_path) {
+    Error(e) -> {
+      exit_program_with_error(
+        title: "opening file '" <> file_path <> "'",
+        reason: Some(e),
+      )
+      panic
+    }
+    Ok(v) -> v
+  }
+
   read_by_delimiter(rts, delim, field)
   |> io.println
-  read_text_stream.close(rts)
+
+  case read_text_stream.close(rts) {
+    Error(e) -> {
+      exit_program_with_error(
+        title: "extracting 'filepath' argument",
+        reason: Some(e),
+      )
+      Nil
+    }
+    _ -> Nil
+  }
 }
 
 pub fn main() {
