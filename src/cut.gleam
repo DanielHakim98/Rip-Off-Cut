@@ -11,6 +11,19 @@ import argv
 @external(erlang, "erlang", "halt")
 fn shutdown(status: Int) -> a
 
+fn println_error_extend(title msg: String, reason e: Option(a)) -> Nil {
+  io.println_error("Error: " <> msg)
+  case e {
+    Some(a) -> {
+      io.print_error("Detail: ")
+      io.debug(a)
+      Nil
+    }
+    None -> Nil
+  }
+}
+
+
 const delimiter = "delimiter"
 
 fn delimiter_flag() -> flag.FlagBuilder(String) {
@@ -57,18 +70,7 @@ fn get_delim_value(delim: DELIM) -> String {
   }
 }
 
-fn exit_program_with_error(title msg: String, reason e: Option(a)) -> Nil {
-  io.println_error("Error: " <> msg)
-  case e {
-    Some(a) -> {
-      io.println_error("Detail: ")
-      io.debug(a)
-      Nil
-    }
-    None -> Nil
-  }
-    shutdown(1)
-}
+
 
 fn do_get_element(seq: List(String), index: Int) -> String {
   case list.at(in: seq, get: index) {
@@ -92,11 +94,11 @@ fn do_read_by_delimiter(
       case e {
         read_stream_error.EndOfStream -> acc
         _ -> {
-          exit_program_with_error(
+          println_error_extend(
             title: "error while while reading file",
             reason: Some(e),
           )
-          ""
+          shutdown(1)
         }
       }
     }
@@ -123,33 +125,32 @@ fn run_cut(input: glint.CommandInput) -> Nil {
   let field = case f {
     f if f > 0 -> f
     f if f <= 0 -> {
-      exit_program_with_error(title: "field is numbered from 1", reason: None)
-      0
+      println_error_extend(title: "field is numbered from 1", reason: None)
+      shutdown(1)
     }
     _ -> {
-      exit_program_with_error(title: "invalid field value", reason: None)
-      0
+      println_error_extend(title: "invalid field value", reason: None)
+      shutdown(1)
     }
   }
 
   let file_path = case list.first(input.args) {
     Error(e) -> {
-      exit_program_with_error(
+      println_error_extend(
         title: "extracting 'filepath' argument",
-        reason: Some(e),
-      )
-      ""
+        reason: Some(e),)
+      shutdown(1)
     }
     Ok(value) -> value
   }
 
   let rts = case read_text_stream.open(file_path) {
     Error(e) -> {
-      exit_program_with_error(
+      println_error_extend(
         title: "opening file '" <> file_path <> "'",
         reason: Some(e),
       )
-      panic
+      shutdown(1)
     }
     Ok(v) -> v
   }
@@ -159,11 +160,11 @@ fn run_cut(input: glint.CommandInput) -> Nil {
 
   case read_text_stream.close(rts) {
     Error(e) -> {
-      exit_program_with_error(
+      println_error_extend(
         title: "extracting 'filepath' argument",
         reason: Some(e),
       )
-      Nil
+      shutdown(1)
     }
     _ -> Nil
   }
