@@ -7,7 +7,9 @@ import file_streams/read_stream_error
 import file_streams/read_text_stream.{type ReadTextStream}
 import glint
 import argv
-import shellout
+
+@external(erlang, "erlang", "halt")
+fn shutdown(status: Int) -> a
 
 const delimiter = "delimiter"
 
@@ -65,7 +67,7 @@ fn exit_program_with_error(title msg: String, reason e: Option(a)) -> Nil {
     }
     None -> Nil
   }
-  shellout.exit(1)
+    shutdown(1)
 }
 
 fn do_get_element(seq: List(String), index: Int) -> String {

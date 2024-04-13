@@ -13,7 +13,6 @@ packages = [
   { name = "gleescript", version = "1.0.1", build_tools = ["gleam"], requirements = ["filepath", "gleam_erlang", "gleam_stdlib", "simplifile", "snag", "tom"], otp_app = "gleescript", source = "hex", outer_checksum = "C7165DADC9B658CF30BCD57195FAAA2B2ED1749285EB0BE0129439C680572A56" },
   { name = "gleeunit", version = "1.1.2", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleeunit", source = "hex", outer_checksum = "72CDC3D3F719478F26C4E2C5FED3E657AC81EC14A47D2D2DEBB8693CA3220C3B" },
   { name = "glint", version = "0.18.0", build_tools = ["gleam"], requirements = ["gleam_community_ansi", "gleam_community_colour", "gleam_stdlib", "snag"], otp_app = "glint", source = "hex", outer_checksum = "BB0F14643CC51C069A5DC6E9082EAFCD9967AFD1C9CC408803D1A40A3FD43B54" },
-  { name = "shellout", version = "1.6.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "shellout", source = "hex", outer_checksum = "E2FCD18957F0E9F67E1F497FC9FF57393392F8A9BAEAEA4779541DE7A68DD7E0" },
   { name = "simplifile", version = "1.7.0", build_tools = ["gleam"], requirements = ["filepath", "gleam_stdlib"], otp_app = "simplifile", source = "hex", outer_checksum = "1D5DFA3A2F9319EC85825F6ED88B8E449F381B0D55A62F5E61424E748E7DDEB0" },
   { name = "snag", version = "0.3.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "snag", source = "hex", outer_checksum = "54D32E16E33655346AA3E66CBA7E191DE0A8793D2C05284E3EFB90AD2CE92BCC" },
   { name = "thoas", version = "0.4.1", build_tools = ["rebar3"], requirements = [], otp_app = "thoas", source = "hex", outer_checksum = "4918D50026C073C4AB1388437132C77A6F6F7C8AC43C60C13758CC0ADCE2134E" },
@@ -27,4 +26,3 @@ gleam_stdlib = { version = "~> 0.34 or ~> 1.0" }
 gleescript = { version = "~> 1.0" }
 gleeunit = { version = "~> 1.0" }
 glint = { version = "~> 0.18" }
-shellout = { version = "~> 1.6" }
