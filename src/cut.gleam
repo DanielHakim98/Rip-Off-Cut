@@ -134,7 +134,7 @@ fn run_cut(input: glint.CommandInput) -> Nil {
   let file_path = case list.first(input.args) {
     Error(e) -> {
       println_error_extend(
-        title: "extracting 'filepath' argument",
+        title: "fail to extract 'filepath' argument",
         reason: Some(e),
       )
       shutdown(1)
@@ -145,7 +145,7 @@ fn run_cut(input: glint.CommandInput) -> Nil {
   let rts = case read_text_stream.open(file_path) {
     Error(e) -> {
       println_error_extend(
-        title: "opening file '" <> file_path <> "'",
+        title: "fail to open file '" <> file_path <> "'",
         reason: Some(e),
       )
       shutdown(1)
