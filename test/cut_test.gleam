@@ -1,4 +1,5 @@
 import gleeunit
+import creader
 import cut
 import gleeunit/should
 
@@ -13,7 +14,7 @@ pub fn main() {
 pub fn tab_input_from_filepath_test() {
   let cfg =
     cut.Config(
-      delimiter: cut.map_input_to_delim("\t"),
+      delimiter: creader.map_input_to_delim("\t"),
       field: 1,
       file_path: "test/test.tsv",
     )
@@ -24,7 +25,7 @@ pub fn tab_input_from_filepath_test() {
 pub fn csv_input_from_filepath_test() {
   let cfg =
     cut.Config(
-      delimiter: cut.map_input_to_delim(","),
+      delimiter: creader.map_input_to_delim(","),
       field: 2,
       file_path: "test/test.csv",
     )
