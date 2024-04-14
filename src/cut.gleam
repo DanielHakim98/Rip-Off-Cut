@@ -198,12 +198,12 @@ fn do_by_delimiter_stdin(acc: String, delim: DELIM, field: Int) -> String {
   }
 }
 
-pub type Config{
+pub type Config {
   Config(delimiter: DELIM, field: Int, file_path: String)
 }
 
-pub fn result_stdin_or_path(cfg: Config)->String{
-    case string.length(cfg.file_path) {
+pub fn result_stdin_or_path(cfg: Config) -> String {
+  case string.length(cfg.file_path) {
     0 -> from_stdin(cfg.delimiter, cfg.field)
     _ -> from_path(cfg.delimiter, cfg.field, cfg.file_path)
   }
@@ -211,7 +211,11 @@ pub fn result_stdin_or_path(cfg: Config)->String{
 
 fn run_cut(input: glint.CommandInput) -> Nil {
   let #(delim, field, file_path) = extract_args(input)
-  result_stdin_or_path(Config(delimiter:delim, field:field, file_path: file_path))
+  result_stdin_or_path(Config(
+    delimiter: delim,
+    field: field,
+    file_path: file_path,
+  ))
   |> io.println
 }
 
