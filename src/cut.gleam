@@ -11,7 +11,7 @@ import glint/flag
 import creader.{type DELIM}
 import file_streams/read_text_stream
 
-fn extract_args(input: glint.CommandInput) -> #(DELIM, Int, String) {
+fn extract_args(input: glint.CommandInput) -> Config {
   let assert Ok(d) = flag.get_string(from: input.flags, for: cflag.delimiter)
   let delim = creader.map_input_to_delim(d)
 
@@ -36,7 +36,7 @@ fn extract_args(input: glint.CommandInput) -> #(DELIM, Int, String) {
     Ok(value) -> value
   }
 
-  #(delim, field, file_path)
+  Config(delimiter: delim, field: field, file_path: file_path)
 }
 
 fn from_path(delim: DELIM, field: Int, file_path: String) -> String {
@@ -83,12 +83,7 @@ pub fn result_stdin_or_path(cfg: Config) -> String {
 }
 
 fn run(input: glint.CommandInput) -> Nil {
-  let #(delim, field, file_path) = extract_args(input)
-  result_stdin_or_path(Config(
-    delimiter: delim,
-    field: field,
-    file_path: file_path,
-  ))
+  result_stdin_or_path(extract_args(input))
   |> io.println
 }
 
