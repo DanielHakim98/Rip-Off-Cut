@@ -1,6 +1,7 @@
 import gleam/io
 import gleam/list
 import gleam/string
+import gleam/bit_array
 import gleam/option.{type Option, None, Some}
 import glint/flag
 import file_streams/read_stream_error
@@ -10,6 +11,9 @@ import argv
 
 @external(erlang, "erlang", "halt")
 fn shutdown(status: Int) -> a
+
+@external(erlang, "stdin_ffi", "io_get_line")
+fn read_line() -> BitArray
 
 fn println_error_extend(title msg: String, reason e: Option(a)) -> Nil {
   io.println_error("Error: " <> msg)
@@ -114,7 +118,7 @@ fn read_by_delimiter(rts: ReadTextStream, delim: DELIM, field: Int) -> String {
   |> string.trim_right
 }
 
-fn run_cut(input: glint.CommandInput) -> Nil {
+fn extract_args(input: glint.CommandInput)->#(DELIM, Int, String){
   let assert Ok(d) = flag.get_string(from: input.flags, for: delimiter)
   let delim = map_input_to_delim(d)
 
@@ -132,16 +136,14 @@ fn run_cut(input: glint.CommandInput) -> Nil {
   }
 
   let file_path = case list.first(input.args) {
-    Error(e) -> {
-      println_error_extend(
-        title: "fail to extract 'filepath' argument",
-        reason: Some(e),
-      )
-      shutdown(1)
-    }
+    Error(_) -> ""
     Ok(value) -> value
   }
 
+  #(delim, field, file_path)
+}
+
+fn from_path(delim: DELIM, field: Int, file_path: String) -> Nil{
   let rts = case read_text_stream.open(file_path) {
     Error(e) -> {
       println_error_extend(
@@ -165,6 +167,23 @@ fn run_cut(input: glint.CommandInput) -> Nil {
       shutdown(1)
     }
     _ -> Nil
+  }
+}
+
+fn from_stdin(delim: DELIM, field: Int) -> Nil{
+  case bit_array.to_string(read_line()){
+    Error(_) -> ""
+    Ok(v) -> v
+  }
+  |> io.println
+  Nil
+}
+
+fn run_cut(input: glint.CommandInput) -> Nil {
+  let #(delim, field, file_path) = extract_args(input)
+  case string.length(file_path) {
+    0 -> from_stdin(delim, field)
+    _ -> from_path(delim, field, file_path)
   }
 }
 
