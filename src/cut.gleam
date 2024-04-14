@@ -42,7 +42,7 @@ fn field_flag() -> flag.FlagBuilder(Int) {
   |> flag.description("Select only this field. Valid value starts from 1")
 }
 
-type DELIM {
+pub type DELIM {
   Space(String)
   Comma(String)
   Pipe(String)
@@ -50,7 +50,7 @@ type DELIM {
   Unsupported(String)
 }
 
-fn map_input_to_delim(input: String) -> DELIM {
+pub fn map_input_to_delim(input: String) -> DELIM {
   case input {
     " " -> Space(input)
     "," -> Comma(input)
@@ -141,7 +141,7 @@ fn extract_args(input: glint.CommandInput) -> #(DELIM, Int, String) {
   #(delim, field, file_path)
 }
 
-fn from_path(delim: DELIM, field: Int, file_path: String) -> Nil {
+fn from_path(delim: DELIM, field: Int, file_path: String) -> String {
   let rts = case read_text_stream.open(file_path) {
     Error(e) -> {
       println_error_extend(
@@ -153,8 +153,7 @@ fn from_path(delim: DELIM, field: Int, file_path: String) -> Nil {
     Ok(v) -> v
   }
 
-  read_by_delimiter(rts, delim, field)
-  |> io.println
+  let result = read_by_delimiter(rts, delim, field)
 
   case read_text_stream.close(rts) {
     Error(e) -> {
@@ -166,12 +165,12 @@ fn from_path(delim: DELIM, field: Int, file_path: String) -> Nil {
     }
     _ -> Nil
   }
+
+  result
 }
 
-fn from_stdin(delim: DELIM, field: Int) -> Nil {
+fn from_stdin(delim: DELIM, field: Int) -> String {
   read_by_delimiter_stdin(delim, field)
-  |> io.println
-  Nil
 }
 
 fn read_by_delimiter_stdin(delim: DELIM, field: Int) -> String {
@@ -199,12 +198,21 @@ fn do_by_delimiter_stdin(acc: String, delim: DELIM, field: Int) -> String {
   }
 }
 
+pub type Config{
+  Config(delimiter: DELIM, field: Int, file_path: String)
+}
+
+pub fn result_stdin_or_path(cfg: Config)->String{
+    case string.length(cfg.file_path) {
+    0 -> from_stdin(cfg.delimiter, cfg.field)
+    _ -> from_path(cfg.delimiter, cfg.field, cfg.file_path)
+  }
+}
+
 fn run_cut(input: glint.CommandInput) -> Nil {
   let #(delim, field, file_path) = extract_args(input)
-  case string.length(file_path) {
-    0 -> from_stdin(delim, field)
-    _ -> from_path(delim, field, file_path)
-  }
+  result_stdin_or_path(Config(delimiter:delim, field:field, file_path: file_path))
+  |> io.println
 }
 
 pub fn main() {
