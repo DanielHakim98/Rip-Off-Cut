@@ -47,7 +47,6 @@ type DELIM {
   Comma(String)
   Pipe(String)
   Semicolon(String)
-  Tab(String)
   Unsupported(String)
 }
 
@@ -57,7 +56,6 @@ fn map_input_to_delim(input: String) -> DELIM {
     "," -> Comma(input)
     "|" -> Pipe(input)
     ";" -> Semicolon(input)
-    "\t" -> Tab(input)
     _ -> Unsupported(input)
   }
 }
@@ -68,7 +66,6 @@ fn get_delim_value(delim: DELIM) -> String {
     Comma(v) -> v
     Pipe(v) -> v
     Semicolon(v) -> v
-    Tab(v) -> v
     Unsupported(v) -> v
   }
 }
@@ -107,6 +104,7 @@ fn do_read_by_delimiter(
       let cell_val =
         string.split(v, on: get_delim_value(delim))
         |> get_element(at: field)
+        |> string.trim_right
         <> "\n"
       do_read_by_delimiter(acc <> cell_val, rts, delim, field)
     }
@@ -118,7 +116,7 @@ fn read_by_delimiter(rts: ReadTextStream, delim: DELIM, field: Int) -> String {
   |> string.trim_right
 }
 
-fn extract_args(input: glint.CommandInput)->#(DELIM, Int, String){
+fn extract_args(input: glint.CommandInput) -> #(DELIM, Int, String) {
   let assert Ok(d) = flag.get_string(from: input.flags, for: delimiter)
   let delim = map_input_to_delim(d)
 
@@ -143,7 +141,7 @@ fn extract_args(input: glint.CommandInput)->#(DELIM, Int, String){
   #(delim, field, file_path)
 }
 
-fn from_path(delim: DELIM, field: Int, file_path: String) -> Nil{
+fn from_path(delim: DELIM, field: Int, file_path: String) -> Nil {
   let rts = case read_text_stream.open(file_path) {
     Error(e) -> {
       println_error_extend(
@@ -170,13 +168,35 @@ fn from_path(delim: DELIM, field: Int, file_path: String) -> Nil{
   }
 }
 
-fn from_stdin(delim: DELIM, field: Int) -> Nil{
-  case bit_array.to_string(read_line()){
-    Error(_) -> ""
-    Ok(v) -> v
-  }
+fn from_stdin(delim: DELIM, field: Int) -> Nil {
+  read_by_delimiter_stdin(delim, field)
   |> io.println
   Nil
+}
+
+fn read_by_delimiter_stdin(delim: DELIM, field: Int) -> String {
+  do_by_delimiter_stdin("", delim, field)
+  |> string.trim_right
+}
+
+fn do_by_delimiter_stdin(acc: String, delim: DELIM, field: Int) -> String {
+  case bit_array.to_string(read_line()) {
+    Error(_) -> ""
+    Ok(v) -> {
+      case v {
+        "" -> acc
+        _ -> {
+          let cell_val =
+            string.split(v, on: get_delim_value(delim))
+            |> get_element(at: field)
+            |> string.trim_right
+            <> "\n"
+
+          do_by_delimiter_stdin(acc <> cell_val, delim, field)
+        }
+      }
+    }
+  }
 }
 
 fn run_cut(input: glint.CommandInput) -> Nil {
